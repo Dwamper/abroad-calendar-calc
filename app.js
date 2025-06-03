@@ -8,12 +8,28 @@ const toInput = document.getElementById('stat-to');
 const calcBtn = document.getElementById('calc-btn');
 const resultDiv = document.getElementById('stats-result');
 const chartCanvas = document.getElementById('chart');
+const presetSelect = document.getElementById('stat-preset');
+const groupSelect = document.getElementById('stat-group');
 const exportBtn = document.getElementById('export-btn');
 const importFile = document.getElementById('import-file');
 
 let entries = loadEntries();
 let editIndex = null;
 renderTable();
+
+presetSelect.addEventListener('change', () => {
+  const days = parseInt(presetSelect.value, 10);
+  if (days) {
+    const to = new Date();
+    toInput.value = to.toISOString().slice(0, 10);
+    const from = new Date();
+    from.setDate(from.getDate() - days + 1);
+    fromInput.value = from.toISOString().slice(0, 10);
+  } else {
+    fromInput.value = '';
+    toInput.value = '';
+  }
+});
 
 addBtn.addEventListener('click', () => {
   if (!dateInput.value || !countryInput.value) return;
@@ -42,7 +58,8 @@ cancelBtn.addEventListener('click', () => {
 
 calcBtn.addEventListener('click', () => {
   if (!fromInput.value || !toInput.value) return;
-  const stats = countDays(fromInput.value, toInput.value);
+  const group = groupSelect.value;
+  const stats = countDays(fromInput.value, toInput.value, group);
   displayStats(stats);
 });
 
@@ -101,22 +118,30 @@ function renderTable() {
   });
 }
 
-function countDays(from, to) {
+function countDays(from, to, group) {
   const start = new Date(from);
   const end = new Date(to);
   const stats = {};
   for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
     const day = d.toISOString().slice(0, 10);
+    let label = 'Total';
+    if (group === 'year') label = d.getFullYear();
+    if (group === 'month') label = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    if (group === '180') {
+      const diff = Math.floor((d - start) / 86400000);
+      label = `Period ${Math.floor(diff / 180) + 1}`;
+    }
+    if (!stats[label]) stats[label] = {};
     let i = -1;
     for (let j = 0; j < entries.length; j++) {
       if (entries[j].date <= day) i = j; else break;
     }
     if (i >= 0) {
       const c = entries[i].country;
-      stats[c] = (stats[c] || 0) + 1;
+      stats[label][c] = (stats[label][c] || 0) + 1;
       if (day === entries[i].date && i > 0) {
         const pc = entries[i - 1].country;
-        stats[pc] = (stats[pc] || 0) + 1;
+        stats[label][pc] = (stats[label][pc] || 0) + 1;
       }
     }
   }
@@ -125,13 +150,33 @@ function countDays(from, to) {
 
 function displayStats(stats) {
   resultDiv.textContent = '';
-  const total = Object.values(stats).reduce((a, b) => a + b, 0);
-  for (const [c, d] of Object.entries(stats)) {
-    const p = document.createElement('p');
-    p.textContent = `${c}: ${d} days`;
-    resultDiv.appendChild(p);
+  const overall = {};
+  for (const [label, data] of Object.entries(stats)) {
+    const box = document.createElement('div');
+    if (label !== 'Total' || Object.keys(stats).length > 1) {
+      const h = document.createElement('h3');
+      h.textContent = label;
+      box.appendChild(h);
+    }
+    for (const [c, d] of Object.entries(data)) {
+      overall[c] = (overall[c] || 0) + d;
+      const p = document.createElement('p');
+      p.textContent = `${c}: ${formatDuration(d)}`;
+      box.appendChild(p);
+    }
+    resultDiv.appendChild(box);
   }
-  drawChart(stats, total);
+  const total = Object.values(overall).reduce((a, b) => a + b, 0);
+  drawChart(overall, total);
+}
+
+function formatDuration(days) {
+  const years = Math.floor(days / 365);
+  const months = Math.floor((days % 365) / 30);
+  let t = '';
+  if (years) t += `${years} year${years > 1 ? 's' : ''} `;
+  if (months) t += `${months} month${months > 1 ? 's' : ''} `;
+  return `${t.trim()}(${days} days)`;
 }
 
 function drawChart(stats, total) {
