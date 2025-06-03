@@ -22,6 +22,7 @@ let residence = loadResidence();
 renderTable();
 residenceInput.value = residence;
 updateCountryList();
+updateStats();
 
 presetSelect.addEventListener('change', () => {
   const days = parseInt(presetSelect.value, 10);
@@ -35,7 +36,12 @@ presetSelect.addEventListener('change', () => {
     fromInput.value = '';
     toInput.value = '';
   }
+  updateStats();
 });
+
+fromInput.addEventListener('input', updateStats);
+toInput.addEventListener('input', updateStats);
+groupSelect.addEventListener('change', updateStats);
 
 addBtn.addEventListener('click', () => {
   if (!dateInput.value || !countryInput.value) return;
@@ -51,6 +57,7 @@ addBtn.addEventListener('click', () => {
   saveEntries();
   renderTable();
   updateCountryList();
+  updateStats();
   dateInput.value = '';
   countryInput.value = '';
 });
@@ -67,13 +74,11 @@ residenceInput.addEventListener('input', () => {
   residence = residenceInput.value.trim();
   saveResidence();
   updateCountryList();
+  updateStats();
 });
 
 calcBtn.addEventListener('click', () => {
-  if (!fromInput.value || !toInput.value) return;
-  const group = groupSelect.value;
-  const stats = countDays(fromInput.value, toInput.value, group);
-  displayStats(stats);
+  updateStats();
 });
 
 exportBtn.addEventListener('click', () => {
@@ -96,6 +101,7 @@ importFile.addEventListener('change', e => {
       saveEntries();
       renderTable();
       updateCountryList();
+      updateStats();
     } catch {}
   };
   reader.readAsText(file);
@@ -256,6 +262,12 @@ function drawBarChart(stats) {
 function drawCharts(stats, total) {
   drawPieChart(stats, total);
   drawBarChart(stats);
+}
+
+function updateStats() {
+  if (!fromInput.value || !toInput.value) return;
+  const stats = countDays(fromInput.value, toInput.value, groupSelect.value);
+  displayStats(stats);
 }
 
 if ('serviceWorker' in navigator) {
