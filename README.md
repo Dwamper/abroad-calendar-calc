@@ -8,6 +8,9 @@ This project provides a simple web application for tracking border crossings and
 - View all entries in a table.
 - Edit existing entries.
 - Calculate how many days were spent in each visited country for a selected period. The day of crossing counts for both countries.
+- Quick presets for last 180 days, last year and several longer periods.
+- Group statistics per year, per month, per 180 days or view all data.
+- Counts are shown as formatted durations.
 - Import and export data as a JSON file.
 - Offline support via a service worker.
 - Optional pie chart for visualizing statistics.
