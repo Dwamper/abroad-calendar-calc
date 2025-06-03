@@ -1,6 +1,27 @@
+:root {
+  --bg-color: #fff;
+  --text-color: #000;
+  --accent-color: #0a84ff;
+  --border-color: #ccc;
+  --row-alt-color: #f9f9f9;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-color: #121212;
+    --text-color: #f0f0f0;
+    --accent-color: #3d8bfd;
+    --border-color: #555;
+    --row-alt-color: #1e1e1e;
+  }
+}
+
 body {
   font-family: sans-serif;
   margin: 1em;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s, color 0.3s;
 }
 
 section {
@@ -11,13 +32,36 @@ label {
   margin-right: 1em;
 }
 
+input {
+  padding: 0.2em 0.4em;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
 table {
   border-collapse: collapse;
   width: 100%;
 }
 
 td, th {
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-color);
   padding: 0.5em;
   text-align: left;
+}
+
+tr:nth-child(even) {
+  background-color: var(--row-alt-color);
+}
+
+button {
+  padding: 0.4em 0.8em;
+  border: 1px solid var(--border-color);
+  background-color: var(--accent-color);
+  color: var(--bg-color);
+  cursor: pointer;
+}
+
+button:hover {
+  opacity: 0.85;
 }
