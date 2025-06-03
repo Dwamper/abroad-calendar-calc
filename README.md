@@ -12,7 +12,7 @@ This project provides a simple web application for tracking border crossings and
 - Group statistics per year, per month, per 180 days or view all data.
 - Counts are shown as formatted durations.
 - Import and export data as a JSON file.
-- Offline support via a service worker.
+- Offline support via a service worker that fetches updates from the network when available.
 - Pie and bar charts for visualizing statistics.
 - Store a country of residence.
 - Country inputs offer suggestions based on previous entries.
