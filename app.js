@@ -1,6 +1,7 @@
 const dateInput = document.getElementById('cross-date');
 const countryInput = document.getElementById('cross-country');
 const addBtn = document.getElementById('add-btn');
+const cancelBtn = document.getElementById('cancel-btn');
 const tableBody = document.querySelector('#cross-table tbody');
 const fromInput = document.getElementById('stat-from');
 const toInput = document.getElementById('stat-to');
@@ -11,13 +12,32 @@ const exportBtn = document.getElementById('export-btn');
 const importFile = document.getElementById('import-file');
 
 let entries = loadEntries();
+let editIndex = null;
 renderTable();
 
 addBtn.addEventListener('click', () => {
   if (!dateInput.value || !countryInput.value) return;
-  entries.push({ date: dateInput.value, country: countryInput.value.trim() });
+  const data = { date: dateInput.value, country: countryInput.value.trim() };
+  if (editIndex === null) {
+    entries.push(data);
+  } else {
+    entries[editIndex] = data;
+    addBtn.textContent = 'Add';
+    cancelBtn.style.display = 'none';
+    editIndex = null;
+  }
   saveEntries();
   renderTable();
+  dateInput.value = '';
+  countryInput.value = '';
+});
+
+cancelBtn.addEventListener('click', () => {
+  editIndex = null;
+  dateInput.value = '';
+  countryInput.value = '';
+  addBtn.textContent = 'Add';
+  cancelBtn.style.display = 'none';
 });
 
 calcBtn.addEventListener('click', () => {
@@ -50,6 +70,18 @@ importFile.addEventListener('change', e => {
   reader.readAsText(file);
 });
 
+tableBody.addEventListener('click', e => {
+  if (e.target.classList.contains('edit-btn')) {
+    const index = parseInt(e.target.dataset.index, 10);
+    const entry = entries[index];
+    dateInput.value = entry.date;
+    countryInput.value = entry.country;
+    editIndex = index;
+    addBtn.textContent = 'Save';
+    cancelBtn.style.display = 'inline';
+  }
+});
+
 function loadEntries() {
   const data = localStorage.getItem('entries');
   return data ? JSON.parse(data) : [];
@@ -62,11 +94,11 @@ function saveEntries() {
 function renderTable() {
   tableBody.innerHTML = '';
   entries.sort((a, b) => a.date.localeCompare(b.date));
-  for (const e of entries) {
+  entries.forEach((e, i) => {
     const row = document.createElement('tr');
-    row.innerHTML = `<td>${e.date}</td><td>${e.country}</td>`;
+    row.innerHTML = `<td>${e.date}</td><td>${e.country}</td><td><button class="edit-btn" data-index="${i}">Edit</button></td>`;
     tableBody.appendChild(row);
-  }
+  });
 }
 
 function countDays(from, to) {
