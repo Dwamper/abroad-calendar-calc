@@ -1,5 +1,6 @@
 const dateInput = document.getElementById('cross-date');
 const countryInput = document.getElementById('cross-country');
+const residenceInput = document.getElementById('residence-country');
 const addBtn = document.getElementById('add-btn');
 const cancelBtn = document.getElementById('cancel-btn');
 const tableBody = document.querySelector('#cross-table tbody');
@@ -7,7 +8,9 @@ const fromInput = document.getElementById('stat-from');
 const toInput = document.getElementById('stat-to');
 const calcBtn = document.getElementById('calc-btn');
 const resultDiv = document.getElementById('stats-result');
-const chartCanvas = document.getElementById('chart');
+const pieCanvas = document.getElementById('pie-chart');
+const barCanvas = document.getElementById('bar-chart');
+const countryList = document.getElementById('country-list');
 const presetSelect = document.getElementById('stat-preset');
 const groupSelect = document.getElementById('stat-group');
 const exportBtn = document.getElementById('export-btn');
@@ -15,7 +18,10 @@ const importFile = document.getElementById('import-file');
 
 let entries = loadEntries();
 let editIndex = null;
+let residence = loadResidence();
 renderTable();
+residenceInput.value = residence;
+updateCountryList();
 
 presetSelect.addEventListener('change', () => {
   const days = parseInt(presetSelect.value, 10);
@@ -44,6 +50,7 @@ addBtn.addEventListener('click', () => {
   }
   saveEntries();
   renderTable();
+  updateCountryList();
   dateInput.value = '';
   countryInput.value = '';
 });
@@ -54,6 +61,12 @@ cancelBtn.addEventListener('click', () => {
   countryInput.value = '';
   addBtn.textContent = 'Add';
   cancelBtn.style.display = 'none';
+});
+
+residenceInput.addEventListener('input', () => {
+  residence = residenceInput.value.trim();
+  saveResidence();
+  updateCountryList();
 });
 
 calcBtn.addEventListener('click', () => {
@@ -82,6 +95,7 @@ importFile.addEventListener('change', e => {
       entries = JSON.parse(evt.target.result);
       saveEntries();
       renderTable();
+      updateCountryList();
     } catch {}
   };
   reader.readAsText(file);
@@ -104,6 +118,14 @@ function loadEntries() {
   return data ? JSON.parse(data) : [];
 }
 
+function loadResidence() {
+  return localStorage.getItem('residence') || '';
+}
+
+function saveResidence() {
+  localStorage.setItem('residence', residence);
+}
+
 function saveEntries() {
   localStorage.setItem('entries', JSON.stringify(entries));
 }
@@ -115,6 +137,17 @@ function renderTable() {
     const row = document.createElement('tr');
     row.innerHTML = `<td>${e.date}</td><td>${e.country}</td><td><button class="edit-btn" data-index="${i}">Edit</button></td>`;
     tableBody.appendChild(row);
+  });
+}
+
+function updateCountryList() {
+  const countries = new Set(entries.map(e => e.country));
+  if (residence) countries.add(residence);
+  countryList.innerHTML = '';
+  Array.from(countries).sort().forEach(c => {
+    const o = document.createElement('option');
+    o.value = c;
+    countryList.appendChild(o);
   });
 }
 
@@ -167,7 +200,14 @@ function displayStats(stats) {
     resultDiv.appendChild(box);
   }
   const total = Object.values(overall).reduce((a, b) => a + b, 0);
-  drawChart(overall, total);
+  drawCharts(overall, total);
+  if (residence && residence.toLowerCase() === 'poland') {
+    const outside = total - (overall[residence] || 0);
+    const left = 183 - outside;
+    const info = document.createElement('p');
+    info.textContent = `Days outside Poland left this year: ${left > 0 ? left : 0}`;
+    resultDiv.appendChild(info);
+  }
 }
 
 function formatDuration(days) {
@@ -179,9 +219,9 @@ function formatDuration(days) {
   return `${t.trim()}(${days} days)`;
 }
 
-function drawChart(stats, total) {
-  const ctx = chartCanvas.getContext('2d');
-  ctx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
+function drawPieChart(stats, total) {
+  const ctx = pieCanvas.getContext('2d');
+  ctx.clearRect(0, 0, pieCanvas.width, pieCanvas.height);
   let start = 0;
   const colors = ['#ff6384', '#36a2eb', '#cc65fe', '#ffce56', '#8bc34a'];
   let i = 0;
@@ -194,6 +234,28 @@ function drawChart(stats, total) {
     ctx.fill();
     start += slice;
   }
+}
+
+function drawBarChart(stats) {
+  const ctx = barCanvas.getContext('2d');
+  ctx.clearRect(0, 0, barCanvas.width, barCanvas.height);
+  const keys = Object.keys(stats);
+  const values = Object.values(stats);
+  const max = Math.max(...values, 1);
+  const barWidth = barCanvas.width / keys.length;
+  const colors = ['#36a2eb', '#ff6384', '#cc65fe', '#ffce56', '#8bc34a'];
+  keys.forEach((k, i) => {
+    const h = (values[i] / max) * (barCanvas.height - 20);
+    ctx.fillStyle = colors[i % colors.length];
+    ctx.fillRect(i * barWidth + 5, barCanvas.height - h, barWidth - 10, h);
+    ctx.fillStyle = '#000';
+    ctx.fillText(k.slice(0, 3), i * barWidth + 5, barCanvas.height - 5);
+  });
+}
+
+function drawCharts(stats, total) {
+  drawPieChart(stats, total);
+  drawBarChart(stats);
 }
 
 if ('serviceWorker' in navigator) {

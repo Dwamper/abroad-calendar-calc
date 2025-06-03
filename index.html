@@ -8,10 +8,14 @@
 </head>
 <body>
   <h1>Abroad Calendar Calc</h1>
+  <section id="settings-section">
+    <label>Residence: <input list="country-list" id="residence-country"></label>
+  </section>
+
   <section id="entry-form">
     <h2>Add Border Crossing</h2>
     <label>Date: <input type="date" id="cross-date"></label>
-    <label>Country: <input type="text" id="cross-country"></label>
+    <label>Country: <input list="country-list" id="cross-country"></label>
     <button id="add-btn">Add</button>
     <button id="cancel-btn" style="display:none">Cancel</button>
   </section>
@@ -50,7 +54,8 @@
     </label>
     <button id="calc-btn">Calculate</button>
     <div id="stats-result"></div>
-    <canvas id="chart" width="300" height="300"></canvas>
+    <canvas id="pie-chart" width="300" height="300"></canvas>
+    <canvas id="bar-chart" width="300" height="300"></canvas>
   </section>
 
   <section id="io-section">
@@ -59,6 +64,7 @@
     <input type="file" id="import-file" accept="application/json">
   </section>
 
+  <datalist id="country-list"></datalist>
   <script src="app.js"></script>
 </body>
 </html>
