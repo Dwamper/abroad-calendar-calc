@@ -13,7 +13,10 @@ This project provides a simple web application for tracking border crossings and
 - Counts are shown as formatted durations.
 - Import and export data as a JSON file.
 - Offline support via a service worker.
-- Optional pie chart for visualizing statistics.
+- Pie and bar charts for visualizing statistics.
+- Store a country of residence.
+- Country inputs offer suggestions based on previous entries.
+- If Poland is the residence, statistics show how many days remain outside Poland this year.
 
 ## Usage
 
