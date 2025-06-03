@@ -1,0 +1,23 @@
+body {
+  font-family: sans-serif;
+  margin: 1em;
+}
+
+section {
+  margin-bottom: 2em;
+}
+
+label {
+  margin-right: 1em;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+td, th {
+  border: 1px solid #ccc;
+  padding: 0.5em;
+  text-align: left;
+}
