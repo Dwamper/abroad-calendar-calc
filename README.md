@@ -6,6 +6,7 @@ This project provides a simple web application for tracking border crossings and
 
 - Add border crossings with date and country.
 - View all entries in a table.
+- Edit existing entries.
 - Calculate how many days were spent in each visited country for a selected period. The day of crossing counts for both countries.
 - Import and export data as a JSON file.
 - Offline support via a service worker.
